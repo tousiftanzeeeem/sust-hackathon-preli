@@ -1,15 +1,32 @@
 import os
 from typing import Optional
+import time
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException,Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+from starlette.middleware.base import BaseHTTPMiddleware
+
+from agent.agent import complete
+
+
+class ResponseTimeMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        start_time = time.perf_counter()
+        response = await call_next(request)
+        end_time = time.perf_counter()
+        process_time = end_time - start_time
+        response.headers["X-Process-Time"] = str(process_time)
+        return response
+
 
 
 
 app = FastAPI()
+
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -18,6 +35,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_middleware(ResponseTimeMiddleware)
 
 # # ── Serve React frontend (no build step — React loaded from CDN) ──
 # # On Vercel the static folder is not available – the frontend lives on Netlify.
@@ -34,32 +53,10 @@ def health_check():
     return {"status": "healthy"}
 
 
-@app.post("/sort-ticket", response_model=TicketResponse)
-def sort_ticket(ticket_data: TicketRequest):
-    if not ticket_data.message.strip():
-        raise HTTPException(status_code=400, detail="Message cannot be empty.")
-
-
-
-    try:
-        result: TicketAnalysisResult = analyze_ticket(
-            ticket_id=ticket_data.ticket_id,
-            message=ticket_data.message,
-        )
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
-
-    return TicketResponse(
-        ticket_id=result.ticket_id,
-        case_type=result.case_type,
-        severity=result.severity,
-        department=result.department,
-        agent_summary=result.agent_summary,
-        human_review_required=result.human_review_required,
-        confidence=result.confidence,
-    )
-
-
+@app.get("/complete")
+def get_completion(prompt: str):
+    print(prompt)
+    return {"response": complete(prompt)}
 
 
 if __name__ == "__main__":
@@ -67,6 +64,6 @@ if __name__ == "__main__":
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
-        port=int(os.environ.get("PORT", 8000)),
+        port=int(os.environ.get("PORT", 8002)),
         reload=True,
     )
