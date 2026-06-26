@@ -2,3 +2,10 @@
 .git
 .gitignore
 README.md
+__pycache__/
+.env
+.vercel
+rubrics.txt
+attack_tests.py
+test_cases.json
+test_check.py
