@@ -123,10 +123,6 @@ class AnalyzeTicketResponse(BaseModel):
         ...,
         description="One of: consistent, inconsistent, insufficient_data.",
     )
-    verdict_reason: str = Field(
-        ...,
-        description="Reasoning behind the evidence_verdict, explaining why the matched transaction supports, contradicts, or is insufficient to evaluate the complaint.",
-    )
     case_type: CaseType = Field(..., description="From the taxonomy in Section 7.1.")
     severity: Severity = Field(..., description="One of: low, medium, high, critical.")
     department: Department = Field(..., description="From the taxonomy in Section 7.2.")
