@@ -361,6 +361,62 @@ You must return three fields:
      which one the customer means. Example: customer reports a vague issue
      and history has no obvious match → INSUFFICIENT_DATA.
 
+    Example: "TKT-001",
+        "complaint": "I sent 5000 taka to a wrong number around 2pm today. The number was supposed to be 01712345678 but I think I typed it wrong. The person isn't responding to my call. Please help me get my money back.",
+        "transaction_history": [
+          {
+            "transaction_id": "TXN-9101",
+            "timestamp": "2026-04-14T14:08:22Z",
+            "type": "transfer",
+            "amount": 5000,
+            "counterparty": "+8801719876543",
+            "status": "completed"
+            }
+            ]
+
+            result: verdict: "consistent" reason: transaction history shows at around 2 pm a transfer of 5000 taka to a number that is not similar to the customer typed number , which supports the customer's claim of sending money to a wrong number.
+2. "complaint": "আমি আজ সকালে এজেন্টের কাছে ২০০০ টাকা ক্যাশ ইন করেছি কিন্তু আমার ব্যালেন্সে টাকা আসেনি। এজেন্ট বলছে টাকা পাঠিয়েছে কিন্তু আমি দেখছি না।",
+
+        "transaction_history": [
+          {
+            "transaction_id": "TXN-9701",
+            "timestamp": "2026-04-14T09:30:00Z",
+            "type": "cash_in",
+            "amount": 2000,
+            "counterparty": "AGENT-318",
+            "status": "pending"
+          }
+        ]
+        result: verdict: "consistent" reason: transaction history shows a cash_in of 2000 taka to an agent at around the time the customer claims, and the status is pending, which supports the customer's claim of not seeing the balance yet.
+    3. "complaint": "I sent 2000 to the wrong person by mistake. Please reverse it.",
+
+        "transaction_history": [
+          {
+            "transaction_id": "TXN-9202",
+            "timestamp": "2026-04-14T11:30:00Z",
+            "type": "transfer",
+            "amount": 2000,
+            "counterparty": "+8801812345678",
+            "status": "completed"
+          },
+          {
+            "transaction_id": "TXN-9180",
+            "timestamp": "2026-04-10T09:15:00Z",
+            "type": "transfer",
+            "amount": 2500,
+            "counterparty": "+8801812345678",
+            "status": "completed"
+          },
+          {
+            "transaction_id": "TXN-9145",
+            "timestamp": "2026-04-05T17:45:00Z",
+            "type": "transfer",
+            "amount": 1500,
+            "counterparty": "+8801812345678",
+            "status": "completed"
+          }
+        ]
+        result:verdict: "insufficient_data" reason: transaction history shows multiple transfers to the same recipient, which makes it clear that transaction is not by mistake.
 3. ``verdict_reason`` — a short explanation (1–2 sentences) of why the
    verdict was reached, citing the matched transaction's details.
 
