@@ -7,52 +7,26 @@ from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from agent import analyze_ticket, TicketAnalysisResult
 
 
+app = FastAPI()
 
-
-class TicketRequest(BaseModel):
-    ticket_id: str
-    channel: Optional[str] = None
-    locale: Optional[str] = None
-    message: str
-
-
-class TicketResponse(BaseModel):
-    ticket_id: str
-    case_type: str
-    severity: str
-    department: str
-    agent_summary: str
-    human_review_required: bool
-    confidence: float = Field(gt=0.0, lt=1.0)
-
-
-app = FastAPI(
-    title="Ticket Triage Multi‑Agent System",
-    description="Uses 4 specialised LangChain agents + an orchestrator to "
-                "classify, score, route and summarise customer support tickets.",
-    version="1.0.0",
-)
-
-# Allow the Netlify frontend to call the Vercel backend (CORS)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, restrict to your Netlify domain
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ── Serve React frontend (no build step — React loaded from CDN) ──
-# On Vercel the static folder is not available – the frontend lives on Netlify.
-if not os.getenv("VERCEL") and os.path.isdir("static"):
-    app.mount("/static", StaticFiles(directory="static"), name="static")
+# # ── Serve React frontend (no build step — React loaded from CDN) ──
+# # On Vercel the static folder is not available – the frontend lives on Netlify.
+# if not os.getenv("VERCEL") and os.path.isdir("static"):
+#     app.mount("/static", StaticFiles(directory="static"), name="static")
 
-    @app.get("/")
-    def serve_static():
-        return FileResponse("static/index.html")
+#     @app.get("/")
+#     def serve_static():
+#         return FileResponse("static/index.html")
 
 
 @app.get("/health")
