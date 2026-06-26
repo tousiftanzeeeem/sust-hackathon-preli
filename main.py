@@ -50,7 +50,7 @@ app.add_middleware(ResponseTimeMiddleware)
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy"}
+    return {"status": "ok"}
 
 
 @app.get("/complete")
